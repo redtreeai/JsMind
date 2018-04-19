@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset=UTF-8>
+    <title>思维导图简易实现</title>
+    <script src="jquery-1.12.4.min.js"></script>
+
+</head>
+<body>
+<canvas id="window" width="800" height="600" onmousedown="listener(event)">不支持H5则显示</canvas>
+<button onclick="check_add_status()">添加节点</button>
+<button onclick="addline()">节点关联</button>
+<p>点击添加节点后再点击画布内，可添加节点并(命名)，点击节点关联后可依次点击节点并输入(关联操作)实现逻辑关联</p>
+
+
+<script type="text/javascript">
+    var c = document.getElementById("window");   //初始化窗口
+    var border = c.getContext("2d");   //分配画笔组建
+    var Node = c.getContext("2d");    //节点画笔
+    var text = c.getContext("2d");    //文字画笔
+    var cline = c.getContext("2d");  //连线画笔
+    var lineText = c.getContext("2d");  //逻辑描述
+
+
+    var isADDnodeing = false
+    var isLineing = false
+    var isLineing1 = false
+
+    var c1x = 0
+    var c1y = 0
+    var c2x = 0
+    var c2y = 0
+    var c1name = ''
+    var c2name = ''
+
+    var nodeList = []   //节点组
+    var nodeNameList = [] //节点名组
+    var lineList = []  //节点关联
+
+    // create window
+    border.moveTo(0, 0);
+    border.lineTo(800, 0);
+    border.lineTo(800, 600);
+    border.lineTo(0, 600);
+    border.lineTo(0, 0);
+    border.stroke();
+
+    //添加node节点
+    function listener(n) {
+        //鼠标坐标监听事件
+        var x = n.clientX;
+        var y = n.clientY;
+
+        var nodeListleng = nodeList.length
+        var nodeNameListleng = nodeNameList.length
+        var lineListleng = nodeNameList.length
+
+        console.log(isADDnodeing,isLineing,isLineing1)
+        if (isLineing) {  //进入节点关联模式
+            for (var i = 0; i < nodeListleng; i++) {
+                point_x = nodeList[i][0]
+                point_y = nodeList[i][1]
+
+
+                if (!isLineing1) {   //确认第一个关联节点
+
+
+                    if (x >= point_x - 20 && x <= point_x + 20 && y >= point_y - 20 && y >= point_y + 20) {
+                        //确认点1
+                        console.log('sss')
+                        c1x = point_x
+                        c1y = point_y
+                        isLineing1 = true
+                        c1name = nodeNameList[i][0]
+                    }
+                } else {
+                    if (x >= point_x - 20 && x <= point_x + 20 && y >= point_y - 20 && y >= point_y + 20) {
+                        //确认点2
+                        c2x = point_x
+                        c2y = point_y
+                        c2name = nodeNameList[i][0]
+
+                        var action = prompt("设置行为");
+
+
+                        cur_line = [c1x, c1y, c2x, c2y, c1name + action + c2name]
+                        lineList.push(cur_line)   //存入关联组，包含节点逻辑
+                        isLineing = false
+                        isLineing1 = false
+
+                        for (var k = 0; k <=lineListleng; k++) {  //再画关联逻辑
+                            cline.moveTo(lineList[k][0], lineList[k][1])
+                            cline.lineTo(lineList[k][2], lineList[k][3])
+                            cline.stroke()
+
+                            var reX = ((lineList[k][0] + lineList[k][2]) / 2) - 30
+                            var reY = ((lineList[k][1] + lineList[k][3]) / 2) - 30
+
+                            lineText.fillText(lineList[k][4], reX, reY, 100, 100)
+                        }
+                        break
+                    }
+                }
+            }
+
+
+        } else {
+            //正常模式 donothing
+            if (isADDnodeing) {  //节点编辑模式
+
+                var cur_node = [x, y, 20, 0]
+                nodeList.push(cur_node)
+                var wnode_name = prompt("节点名");
+                var cur_node_name = ["节点:" + wnode_name, x, y]
+                nodeNameList.push(cur_node_name)
+
+                isADDnodeing = false
+            } else {
+                //donothing
+            }
+            //重新绘画
+            for (var i = 0; i <= nodeListleng; i++) {    //先画节点图像
+                Node.fillStyle = "black";
+                Node.beginPath();
+                Node.arc(nodeList[i][0], nodeList[i][1], nodeList[i][2], nodeList[i][3], Math.PI * 2, true);
+                Node.closePath();
+                Node.fill();
+            }
+            for (var i = 0; i <=nodeNameListleng; i++) {  //后画节点名
+
+                text.fillText(nodeNameList[i][0], nodeNameList[i][1] - 30, nodeNameList[i][2] - 30, 100, 100)
+            }
+
+        }
+    }
+
+    function check_add_status() {  //开启节点添加功能
+        isADDnodeing = true
+    }
+
+    function addline() {
+        isLineing = true    //开启节点关联功能
+    }
+
+
+</script>
+</body>
+</html>
